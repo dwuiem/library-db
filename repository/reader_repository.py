@@ -51,3 +51,26 @@ class ReaderRepository:
             return readers_list
         except Exception as e:
             print(f"Error while retrieving readers: {e}")
+
+    def update(self, reader: Reader):
+        try:
+
+            self.cursor.callproc('update_reader', (reader.id, reader.name, reader.email, reader.phone))
+            self.connection.commit()
+
+            print(f"Reader {reader.name} was updated")
+        except psycopg2.IntegrityError:
+            raise ValueError
+        except Exception as e:
+            self.connection.rollback()
+            print(f"Error while updating reader with ID {reader.id}: {e}")
+
+    def delete_by_id(self, reader_id: int):
+        try:
+            self.cursor.callproc('delete_reader_by_id', (reader_id,))
+            self.connection.commit()
+
+            print(f"Reader with ID {reader_id} was removed")
+        except Exception as e:
+            self.connection.rollback()
+            print(f"Error while updating reader with ID {reader_id}: {e}")

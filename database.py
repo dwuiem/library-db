@@ -57,7 +57,7 @@ class Database:
 
     def init_database(self):
         try:
-            with open("sql/init_db.sql", "r") as file:
+            with open("sql_scripts/init_db.sql", "r") as file:
                 script = file.read()
                 file.close()
             self.cursor.execute(script)

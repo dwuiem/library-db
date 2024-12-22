@@ -23,18 +23,17 @@ class GenreRepository:
             self.connection.rollback()
             print(f"Error while saving genre: {e}")
 
-    def get_by_name(self, name: str) -> Optional[Genre]:
+    def get_by_book_id(self, book_id: int) -> Optional[Genre]:
         try:
-            self.cursor.callproc('get_genre_by_name', (name,))
+            self.cursor.callproc('get_genre_by_book_id', (book_id,))
             genre = self.cursor.fetchone()
 
             if genre:
                 return Genre(id=genre[0], name=genre[1])
             else:
-                print(f"Genre '{name}' not found")
                 return None
         except Exception as e:
-            print(f"Error while retrieving genre: {e}")
+            print(f"Error while retrieving genre by book id: {e}")
             return None
 
     def get_all(self) -> Optional[List[Genre]]:

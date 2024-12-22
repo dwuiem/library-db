@@ -2,8 +2,9 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 
-from repository.database import Database
+from database import Database
 from entity import Book, Author, Genre
+from utils import DATE_FORMAT
 from windows.add_author import AddAuthorWindow
 from windows.add_book import AddBookWindow
 from windows.edit_author import EditAuthorWindow
@@ -11,8 +12,6 @@ from windows.edit_book import EditBookWindow
 from datetime import datetime
 
 from windows.edit_genre import EditGenreWindow
-
-DATE_FORMAT = "%d.%m.%Y"
 
 
 class LibraryTab:
@@ -62,7 +61,7 @@ class LibraryTab:
         self.edit_book_button_right = tk.Button(self.books_buttons, text="Изменить книгу", command=self.edit_book)
         self.edit_book_button_right.pack(side=tk.LEFT, padx=5)
 
-        self.remove_book_button_right = tk.Button(self.books_buttons, text="Удалить книгу", command=self.remove_book)
+        self.remove_book_button_right = tk.Button(self.books_buttons, text="Удалить книги", command=self.remove_book)
         self.remove_book_button_right.pack(side=tk.LEFT, padx=5)
 
         self.authors_and_genres_frame = ttk.Frame(self.right_panel)
@@ -91,7 +90,7 @@ class LibraryTab:
         self.edit_author_button = tk.Button(self.authors_buttons, text="Изменить автора", command=self.edit_author)
         self.edit_author_button.pack(side=tk.LEFT, padx=5)
 
-        self.remove_author_button = tk.Button(self.authors_buttons, text="Удалить автора", command=self.remove_author)
+        self.remove_author_button = tk.Button(self.authors_buttons, text="Удалить авторов", command=self.remove_author)
         self.remove_author_button.pack(side=tk.LEFT, padx=5)
 
         self.genres_frame = ttk.Frame(self.authors_and_genres_frame)
@@ -112,25 +111,34 @@ class LibraryTab:
         self.edit_genre_button = tk.Button(self.genres_buttons, text="Изменить жанр", command=self.edit_genre)
         self.edit_genre_button.pack(side=tk.LEFT, padx=5)
 
-        self.remove_genre_button = tk.Button(self.genres_buttons, text="Удалить жанр", command=self.remove_genre)
+        self.remove_genre_button = tk.Button(self.genres_buttons, text="Удалить жанры", command=self.remove_genre)
         self.remove_genre_button.pack(side=tk.LEFT, padx=5)
 
         self.update_all_info()
 
     def edit_book(self):
-        selected_item = self.books_treeview.selection()[0]
+        selection = self.books_treeview.selection()
+        if not selection or len(selection) > 1:
+            messagebox.showerror("Ошибка", "Выберите ТОЛЬКО одну книгу")
+            return
+
+        selected_item = selection[0]
         values = self.books_treeview.item(selected_item)['values']
 
         book_id = values[0]
         title = values[1]
-        author = self.db.author_repository.get_by_name(values[2])
+        author = self.db.author_repository.get_by_book_id(book_id)
         publication_year = int(values[3]) if values[3] else None
-        genre = self.db.genre_repository.get_by_name(values[4]) if values[4] else None
+        genre = self.db.genre_repository.get_by_book_id(book_id)
 
         book = Book(title, author, publication_year, genre, id=book_id)
         EditBookWindow(self.parent, self.db, book)
 
     def edit_author(self):
+        selection = self.authors_treeview.selection()
+        if not selection or len(selection) > 1:
+            messagebox.showerror("Ошибка", "Выберите ТОЛЬКО одного автора")
+            return
         selected_item = self.authors_treeview.selection()[0]
         values = self.authors_treeview.item(selected_item)['values']
 
@@ -142,7 +150,11 @@ class LibraryTab:
         EditAuthorWindow(self.parent, self.db, author)
 
     def edit_genre(self):
-        selected_item = self.genres_treeview.selection()[0]
+        selection = self.genres_treeview.selection()
+        if not selection or len(selection) > 1:
+            messagebox.showerror("Ошибка", "Выберите ТОЛЬКО один жанр")
+            return
+        selected_item = selection[0]
         values = self.genres_treeview.item(selected_item)['values']
 
         id = int(values[0])

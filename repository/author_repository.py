@@ -25,15 +25,14 @@ class AuthorRepository:
             self.connection.rollback()
             print(f"Error while saving author: {e}")
 
-    def get_by_name(self, name: str) -> Optional[Author]:
+    def get_by_book_id(self, book_id: int) -> Optional[Author]:
         try:
-            self.cursor.callproc('get_author_by_name', (name,))
+            self.cursor.callproc('get_author_by_book_id', (book_id,))
             author_row = self.cursor.fetchone()
 
             if author_row:
                 return Author(id=author_row[0], name=author_row[1], birth_date=author_row[2])
             else:
-                print(f"Author '{name}' not found")
                 return None
         except Exception as e:
             print(f"Error while retrieving author: {e}")

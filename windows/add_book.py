@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-from repository.database import Database
+from database import Database
 from entity import Book, Genre
 
 class AddBookWindow:

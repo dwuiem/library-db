@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from loans_tab import LoansTab
-from repository.database import Database
+from database import Database
 from library_tab import LibraryTab
 from readers_tab import ReadersTab
 

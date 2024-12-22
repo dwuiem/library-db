@@ -1,11 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
 
-from repository.database import Database
+from database import Database
 from tkinter import messagebox
-from windows.lend_book import LendBookWindow
 
-DATE_FORMAT = "%d.%m.%Y"
+from utils import DATE_FORMAT
+from windows.lend_book import LendBookWindow
 
 
 class LoansTab:
@@ -101,6 +101,10 @@ class LoansTab:
 
     def display_reader_info(self):
         self.reader = self.db.reader_repository.get_by_name(self.reader_entry.get())
+        if not self.reader:
+            messagebox.showerror("Ошибка", "Такого читателя не существует")
+            return
+
         self.available_books = self.db.book_repository.get_all_available()
         self.reserved_books = self.db.book_repository.get_all_by_reader_id(reader_id=self.reader.id)
         reader_info = (f"Читатель: {self.reader.name} \n"

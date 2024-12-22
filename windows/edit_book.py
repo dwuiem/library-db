@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-from repository.database import Database
+from database import Database
 from entity import Book, Genre
 
 
@@ -44,7 +44,7 @@ class EditBookWindow:
 
         self.authors_combobox = ttk.Combobox(self.window, state="readonly", width=50)
         self.authors_combobox.pack(padx=50, pady=5)
-        self.authors_combobox.insert(tk.END, self.book.author.name + (" | " + str(self.book.author.birth_date) if self.book.author.birth_date else ""))
+        self.authors_combobox.set(self.book.author.name + (" | " + str(self.book.author.birth_date) if self.book.author.birth_date else ""))
 
         self.authors_combobox['values'] = list(self.authors_map.keys())
 
@@ -52,7 +52,7 @@ class EditBookWindow:
         tk.Label(self.window, text="Жанр:").pack(padx=10, pady=5)
         self.genres_combobox = ttk.Combobox(self.window)
         self.genres_combobox.pack(padx=10, pady=5)
-        self.genres_combobox.insert(tk.END, self.book.genre.name if self.book.genre.name else "")
+        self.genres_combobox.set(self.book.genre.name if self.book.genre else "")
 
         self.genres_combobox['values'] = list(self.genres_map.keys())
 

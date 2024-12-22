@@ -1,9 +1,10 @@
 import tkinter as tk
-from tkinter import ttk
-from repository.database import Database
-from windows.add_reader import AddReaderWindow
+from tkinter import ttk, messagebox
 
-DATE_FORMAT = "%d.%m.%Y"
+from entity import Reader
+from database import Database
+from windows.add_reader import AddReaderWindow
+from windows.edit_reader import EditReaderWindow
 
 
 class ReadersTab:
@@ -46,10 +47,10 @@ class ReadersTab:
         self.add_reader_button = tk.Button(self.readers_buttons, text="Добавить читателя", command=lambda: AddReaderWindow(self.parent, self.db))
         self.add_reader_button.pack(side=tk.LEFT, padx=5)
 
-        self.edit_reader_button = tk.Button(self.readers_buttons, text="Изменить читателя")
+        self.edit_reader_button = tk.Button(self.readers_buttons, text="Изменить читателя", command=self.edit_reader)
         self.edit_reader_button.pack(side=tk.LEFT, padx=5)
 
-        self.remove_reader_button = tk.Button(self.readers_buttons, text="Удалить читателя")
+        self.remove_reader_button = tk.Button(self.readers_buttons, text="Удалить читателя/читателей", command=self.remove_readers)
         self.remove_reader_button.pack(side=tk.LEFT, padx=5)
 
         self.loans_frame = ttk.Frame(self.right_panel)
@@ -70,6 +71,26 @@ class ReadersTab:
         self.loans_treeview.column("Return Date", width=150, stretch=tk.YES)
 
         self.update_all_info()
+
+    def edit_reader(self):
+        selection = self.readers_treeview.selection()
+        if not selection or len(selection) > 1:
+            messagebox.showerror("Ошибка", "Выберите ТОЛЬКО одного читателя")
+            return
+
+        values = self.readers_treeview.item(selection[0])['values']
+
+        reader = Reader(id=values[0], name=values[1], email=values[2], phone=values[3])
+        EditReaderWindow(self.parent, self.db, reader)
+
+    def remove_readers(self):
+        selected_items = self.readers_treeview.selection()
+        if selected_items:
+            for item in selected_items:
+                reader_id = self.readers_treeview.item(item)['values'][0]
+                self.db.reader_repository.delete_by_id(reader_id)
+                self.readers_treeview.delete(item)
+
 
     def update_all_info(self):
         self.update_readers_treeview()

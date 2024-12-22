@@ -32,6 +32,39 @@ CREATE TABLE IF NOT EXISTS loans (
     FOREIGN KEY (reader_id) REFERENCES readers(id) ON DELETE CASCADE
 );
 
+
+-- Индекс для ускорения запроса поиска по имени
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_indexes
+        WHERE indexname = 'idx_readers_name'
+    ) THEN
+        CREATE INDEX idx_readers_name ON readers(name);
+    END IF;
+END $$;
+
+-- Если займ будет удалён, то остальные книги останутся незанятыми
+
+CREATE OR REPLACE FUNCTION update_books_on_loan_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE books
+    SET loan_id = NULL
+    WHERE loan_id = OLD.id;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trigger_update_books_on_loan_delete
+AFTER DELETE ON loans
+FOR EACH ROW
+EXECUTE FUNCTION update_books_on_loan_delete();
+
+-- Удалять займы в которых не осталось книг, которые не вернули
+
 CREATE OR REPLACE FUNCTION delete_unused_loans()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -52,8 +85,10 @@ ON books
 FOR EACH ROW
 EXECUTE FUNCTION delete_unused_loans();
 
+-- ----------------
+-- Author functions
+-- ----------------
 
--- Author table
 CREATE OR REPLACE FUNCTION save_author(author_name TEXT, author_birth_date DATE)
 RETURNS INT AS $$
 DECLARE
@@ -67,13 +102,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION get_author_by_name(author_name TEXT)
+CREATE OR REPLACE FUNCTION get_author_by_book_id(book_id INT)
 RETURNS TABLE(id INT, name TEXT, birth_date DATE) AS $$
 BEGIN
     RETURN QUERY
     SELECT authors.id, authors.name, authors.birth_date
-    FROM authors
-    WHERE authors.name = author_name;
+    FROM books
+    JOIN authors ON books.author_id = authors.id
+    WHERE books.id = book_id;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -102,7 +138,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- --------------
 -- Book functions
+-- --------------
 
 CREATE OR REPLACE FUNCTION save_book(book_title TEXT, book_author_id INT, book_genre_id INT, book_publication_year INT)
 RETURNS INT AS $$
@@ -195,7 +233,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- ---------------
 -- Genre functions
+-- ---------------
 
 CREATE OR REPLACE FUNCTION save_genre(genre_name TEXT)
 RETURNS INT AS $$
@@ -210,13 +250,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION get_genre_by_name(genre_name TEXT)
+CREATE OR REPLACE FUNCTION get_genre_by_book_id(book_id INT)
 RETURNS TABLE(id INT, name TEXT) AS $$
 BEGIN
     RETURN QUERY
     SELECT genres.id, genres.name
-    FROM genres
-    WHERE genres.name = genre_name;
+    FROM books
+    JOIN genres ON books.genre_id = genres.id
+    WHERE books.id = book_id;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -245,7 +286,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- ----------------
 -- Reader functions
+-- ----------------
 
 CREATE OR REPLACE FUNCTION save_reader(reader_name TEXT, reader_email TEXT, reader_phone TEXT)
 RETURNS INT AS $$
@@ -279,24 +322,25 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- ДОРАБОТАТЬ ПАРАМЕТРЫ
---CREATE OR REPLACE FUNCTION update_reader(id INT, name TEXT)
---RETURNS VOID AS $$
---BEGIN
---    UPDATE readers
---    SET name = name
---    WHERE id = id;
---END;
---$$ LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION update_reader(reader_id INT, reader_name TEXT, reader_email TEXT, reader_phone TEXT)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE readers
+    SET name = reader_name, email = reader_email, phone = reader_phone
+    WHERE readers.id = reader_id;
+END;
+$$ LANGUAGE plpgsql;
 
---CREATE OR REPLACE FUNCTION delete_reader_by_id(reader_id INT)
---RETURNS VOID AS $$
---BEGIN
---    DELETE FROM readers WHERE id = reader_id;
---END;
---$$ LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION delete_reader_by_id(reader_id INT)
+RETURNS VOID AS $$
+BEGIN
+    DELETE FROM readers WHERE id = reader_id;
+END;
+$$ LANGUAGE plpgsql;
 
+-- --------------
 -- Loan functions
+-- --------------
 
 CREATE OR REPLACE FUNCTION get_all_loans()
 RETURNS TABLE (

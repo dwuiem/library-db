@@ -1,11 +1,12 @@
 import tkinter as tk
 from tkinter import messagebox
 
-from repository.database import Database
+from database import Database
 from entity import Author
 from datetime import datetime
 
-DATE_FORMAT = "%d.%m.%Y"
+from utils import DATE_FORMAT
+
 
 class EditAuthorWindow:
     def __init__(self, parent: tk.Tk, db: Database, author: Author):

@@ -1,6 +1,9 @@
 from typing import Optional
 from datetime import date, datetime
 
+from utils import DATE_FORMAT
+
+
 class Genre:
     def __init__(self, name: str, id: Optional[int] = None):
         if not name:
@@ -17,6 +20,9 @@ class Author:
         self.id = id
         self.name = name
         self.birth_date = birth_date
+
+    def get_info(self):
+        return self.name + (" | " + str(self.birth_date.strftime(DATE_FORMAT)) if self.birth_date else "")
 
 class Reader:
     def __init__(self, name: str, email: Optional[str], phone: str, id: Optional[int] = None):

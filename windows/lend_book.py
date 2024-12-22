@@ -1,12 +1,13 @@
 import tkinter as tk
 from tkinter import messagebox
 
-from repository.database import Database
+from database import Database
 from typing import List
 
 from datetime import datetime, timedelta
 
-DATE_FORMAT = "%d.%m.%Y"
+from utils import DATE_FORMAT
+
 
 class LendBookWindow:
     def __init__(self, parent: tk.Tk, db: Database, reader_id: int, book_ids: List[int]):
@@ -16,11 +17,11 @@ class LendBookWindow:
         self.book_ids = book_ids
 
         self.window = tk.Toplevel(parent)
-        self.window.title("Забронировать книгу")
+        self.window.title("Забронировать книги")
         self.window.transient(parent)
         self.window.grab_set()
 
-        tk.Label(self.window, text="Когда вы собираетесь вернуть её (дата, не более 7 дней):").pack(padx=10, pady=5)
+        tk.Label(self.window, text="Когда вы собираетесь вернуть их (дата, не более 7 дней):").pack(padx=10, pady=5)
         self.return_date_entry = tk.Entry(self.window)
         self.return_date_entry.pack(padx=10, pady=5)
 
@@ -36,8 +37,8 @@ class LendBookWindow:
             return
         current_date = datetime.now()
         max_return_date = current_date + timedelta(days=7)
-        if return_date > max_return_date:
-            messagebox.showerror("Ошибка", "Дата возврата не может быть позже, чем через 7 дней от текущей.")
+        if return_date > max_return_date or return_date <= current_date:
+            messagebox.showerror("Ошибка", "Дата возврата не может быть текущей и ранее или позже, чем через 7 дней от текущей.")
             return
         self.db.loan_repository.lend_book(self.reader_id, self.book_ids, return_date)
         self.window.destroy()
