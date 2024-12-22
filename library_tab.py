@@ -36,6 +36,9 @@ class LibraryTab:
         self.refresh_button = tk.Button(self.frame, text="Обновить данные", command=self.update_all_info)
         self.refresh_button.pack(padx=10, pady=5, anchor="ne")
 
+        self.clear_button = tk.Button(self.frame, text="Очистить ВСЕ данные", command=self.db.clear_all_tables)
+        self.clear_button.pack(padx=10, pady=5, anchor="center")
+
         self.books_treeview = ttk.Treeview(self.right_panel, columns=("ID", "Title", "Author", "Year", "Genre"),
                                            show="headings")
         self.books_treeview.pack(fill=tk.BOTH, expand=True)
@@ -63,6 +66,9 @@ class LibraryTab:
 
         self.remove_book_button_right = tk.Button(self.books_buttons, text="Удалить книги", command=self.remove_book)
         self.remove_book_button_right.pack(side=tk.LEFT, padx=5)
+
+        self.clear_books_button = tk.Button(self.books_buttons, text="Очистить все книги", command=self.db.book_repository.clear_all)
+        self.clear_books_button.pack(side=tk.LEFT, padx=5)
 
         self.authors_and_genres_frame = ttk.Frame(self.right_panel)
         self.authors_and_genres_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)

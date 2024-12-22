@@ -9,6 +9,16 @@ class BookRepository:
         self.connection = connection
         self.cursor = connection.cursor()
 
+    def clear_all(self):
+        try:
+            self.cursor.callproc('clear_books')
+            self.connection.commit()
+
+            print(f"All books were cleared")
+        except Exception as e:
+            self.connection.rollback()
+            print(f"Error while clearing all books {e}")
+
     def save(self, book: Book) -> int:
         try:
             self.cursor.callproc('save_book', (book.title, book.author.id, book.genre.id if book.genre else None, book.publication_year))

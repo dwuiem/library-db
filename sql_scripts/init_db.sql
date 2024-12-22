@@ -32,6 +32,29 @@ CREATE TABLE IF NOT EXISTS loans (
     FOREIGN KEY (reader_id) REFERENCES readers(id) ON DELETE CASCADE
 );
 
+-- Очистка всех таблиц
+
+CREATE OR REPLACE FUNCTION clear_all_tables()
+RETURNS VOID AS
+$$
+BEGIN
+    DELETE FROM loans;
+    DELETE FROM books;
+    DELETE FROM readers;
+    DELETE FROM genres;
+    DELETE FROM authors;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Очистка всех книг
+
+CREATE OR REPLACE FUNCTION clear_books()
+RETURNS VOID AS
+$$
+BEGIN
+    DELETE FROM books;
+END;
+$$ LANGUAGE plpgsql;
 
 -- Индекс для ускорения запроса поиска по имени
 

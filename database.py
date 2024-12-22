@@ -66,3 +66,12 @@ class Database:
             self.connection.rollback()
             print(f"Error while database initialization: {e}")
         print("Database initialized")
+
+    def clear_all_tables(self):
+        try:
+            self.cursor.callproc('clear_all_tables')
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            print(f"Error while clearing all tables: {e}")
+        print("All tables were cleared")
