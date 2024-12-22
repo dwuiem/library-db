@@ -26,8 +26,9 @@ class Reader:
         self.phone = phone
 
 class Loan:
-    def __init__(self, reader: Optional[Reader], return_date: Optional[datetime], loan_date: Optional[datetime] = datetime.now(), id: Optional[int] = None):
+    def __init__(self, reader: Optional[Reader], return_date: Optional[datetime], loan_date: Optional[datetime] = datetime.now(), book_count: Optional[int] = None, id: Optional[int] = None):
         self.id = id
+        self.book_count = book_count
         self.reader = reader
         self.return_date = return_date
         self.loan_date = loan_date

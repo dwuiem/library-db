@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS loans (
     reader_id INT NOT NULL,
     loan_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     return_date TIMESTAMP NOT NULL,
+    book_count INT,
     FOREIGN KEY (reader_id) REFERENCES readers(id) ON DELETE CASCADE
 );
 
@@ -94,7 +95,7 @@ CREATE OR REPLACE FUNCTION update_book_count()
 RETURNS TRIGGER AS $$
 BEGIN
     -- Обновление поля book_count при добавлении книги в займ
-    IF (TG_OP = 'INSERT') THEN
+    IF (TG_OP = 'UPDATE') THEN
         UPDATE loans
         SET book_count = (SELECT COUNT(*) FROM books WHERE loan_id = NEW.loan_id)
         WHERE id = NEW.loan_id;
@@ -109,8 +110,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Создание триггера для таблицы books
-CREATE TRIGGER book_count_trigger
-AFTER INSERT OR DELETE ON books
+CREATE OR REPLACE TRIGGER book_count_trigger
+AFTER UPDATE OR DELETE ON books
 FOR EACH ROW
 EXECUTE FUNCTION update_book_count();
 
@@ -392,7 +393,7 @@ $$ LANGUAGE plpgsql;
 -- --------------
 -- Loan functions
 -- --------------
-
+DROP FUNCTION get_all_loans();
 CREATE OR REPLACE FUNCTION get_all_loans()
 RETURNS TABLE (
     loan_id INT,
@@ -401,12 +402,13 @@ RETURNS TABLE (
     reader_email TEXT,
     reader_phone TEXT,
     return_date TIMESTAMP,
-    loan_date TIMESTAMP
+    loan_date TIMESTAMP,
+    book_count INT
 ) AS $$
 BEGIN
     RETURN QUERY
     SELECT
-        l.id, r.id, r.name, r.email, r.phone, l.return_date, l.loan_date
+        l.id, r.id, r.name, r.email, r.phone, l.return_date, l.loan_date, l.book_count
     FROM loans l
     JOIN readers r ON r.id = l.reader_id;
 END;

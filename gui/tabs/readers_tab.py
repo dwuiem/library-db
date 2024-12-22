@@ -56,7 +56,7 @@ class ReadersTab:
         self.loans_frame = ttk.Frame(self.right_panel)
         self.loans_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=10)
 
-        self.loans_treeview = ttk.Treeview(self.loans_frame, columns=("Loan ID", "Reader Name", "Loan Date", "Return Date"),
+        self.loans_treeview = ttk.Treeview(self.loans_frame, columns=("Loan ID", "Reader Name", "Loan Date", "Return Date", "Book Count"),
                                            show="headings")
         self.loans_treeview.pack(fill=tk.BOTH, expand=True)
 
@@ -64,11 +64,13 @@ class ReadersTab:
         self.loans_treeview.heading("Reader Name", text="Имя Читателя")
         self.loans_treeview.heading("Loan Date", text="Дата займа")
         self.loans_treeview.heading("Return Date", text="Дата возврата")
+        self.loans_treeview.heading("Book Count", text="Книг занято")
 
         self.loans_treeview.column("Loan ID", width=50, stretch=tk.YES)
         self.loans_treeview.column("Reader Name", width=200, stretch=tk.YES)
         self.loans_treeview.column("Loan Date", width=150, stretch=tk.YES)
         self.loans_treeview.column("Return Date", width=150, stretch=tk.YES)
+        self.loans_treeview.column("Book Count", width=50, stretch=tk.YES)
 
         self.update_all_info()
 
@@ -108,5 +110,5 @@ class ReadersTab:
         for item in self.loans_treeview.get_children():
             self.loans_treeview.delete(item)
         for loan in self.loans:
-            self.loans_treeview.insert("", tk.END, values=(loan.id, loan.reader.name, loan.loan_date.strftime('%d.%m.%Y'), loan.return_date.strftime('%d.%m.%Y')))
+            self.loans_treeview.insert("", tk.END, values=(loan.id, loan.reader.name, loan.loan_date.strftime('%d.%m.%Y'), loan.return_date.strftime('%d.%m.%Y'), loan.book_count))
 

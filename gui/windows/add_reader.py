@@ -44,7 +44,7 @@ class AddReaderWindow:
         if not phone:
             messagebox.showerror("Ошибка", "Неверный формат номера телефона")
             return
-        if not validate_email(email=email):
+        if email and not validate_email(email=email):
             messagebox.showerror("Ошибка", "Неверный формат почты")
             return
 

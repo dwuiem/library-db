@@ -19,7 +19,7 @@ class LoanRepository:
             loans_list = []
             for row in rows:
                 reader = Reader(row[2], row[3], row[4], row[1])
-                loans_list.append(Loan(reader, row[5], row[6], row[0]))
+                loans_list.append(Loan(reader, row[5], row[6], row[7], row[0]))
             return loans_list
         except Exception as e:
             print(f"Error while retrieving books: {e}")
