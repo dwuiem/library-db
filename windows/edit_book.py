@@ -11,8 +11,8 @@ class EditBookWindow:
         self.parent = parent
         self.book = book
 
-        self.authors = self.db.get_all_authors()
-        self.genres = self.db.get_all_genres()
+        self.authors = self.db.author_repository.get_all()
+        self.genres = self.db.genre_repository.get_all()
 
         self.authors_map = {
             author.name + (" | " + str(author.birth_date) if author.birth_date else ""): author
@@ -46,7 +46,6 @@ class EditBookWindow:
         self.authors_combobox.pack(padx=50, pady=5)
         self.authors_combobox.insert(tk.END, self.book.author.name + (" | " + str(self.book.author.birth_date) if self.book.author.birth_date else ""))
 
-        # Обновляем список авторов
         self.authors_combobox['values'] = list(self.authors_map.keys())
 
         # Жанр
@@ -85,8 +84,7 @@ class EditBookWindow:
         elif genre_name:
             genre = Genre(genre_name)
             genre.id = self.db.genre_repository.save(genre)
-
-        book = Book(title, author, publication_year, genre, self.book.id)
+        book = Book(title, author, publication_year, genre, id=self.book.id)
         self.db.book_repository.update(book)
 
         self.window.destroy()

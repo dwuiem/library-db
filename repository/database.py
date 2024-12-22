@@ -64,5 +64,5 @@ class Database:
             self.connection.commit()
         except Exception as e:
             self.connection.rollback()
-            print(f"Error while creating tables: {e}")
+            print(f"Error while database initialization: {e}")
         print("Database initialized")

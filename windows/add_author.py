@@ -37,7 +37,7 @@ class AddAuthorWindow:
         birth_date_str = self.birth_date_entry.get()
         if birth_date_str:
             try:
-                birth_date = datetime.strptime(birth_date_str, DATE_FORMAT)
+                birth_date = datetime.strptime(birth_date_str, DATE_FORMAT).date()
             except ValueError:
                 messagebox.showwarning("Ошибка", "Укажите дату рождения формата DD.MM.YYYY")
                 return

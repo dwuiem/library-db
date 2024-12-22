@@ -121,13 +121,13 @@ class LibraryTab:
         selected_item = self.books_treeview.selection()[0]
         values = self.books_treeview.item(selected_item)['values']
 
-        id = values[0]
+        book_id = values[0]
         title = values[1]
         author = self.db.author_repository.get_by_name(values[2])
         publication_year = int(values[3]) if values[3] else None
         genre = self.db.genre_repository.get_by_name(values[4]) if values[4] else None
 
-        book = Book(title, author, publication_year, genre, id)
+        book = Book(title, author, publication_year, genre, id=book_id)
         EditBookWindow(self.parent, self.db, book)
 
     def edit_author(self):

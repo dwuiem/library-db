@@ -11,33 +11,24 @@ class BookRepository:
 
     def save(self, book: Book) -> int:
         try:
-            insert_query = """
-                INSERT INTO books (title, author_id, genre_id, publication_year) 
-                VALUES (%s, %s, %s, %s) RETURNING id;
-            """
-            self.cursor.execute(insert_query, (book.title, book.author.id, book.genre.id if book.genre else None, book.publication_year))
-            book_id = self.cursor.fetchone()[0]
-            self.connection.commit()
+            self.cursor.callproc('save_book', (book.title, book.author.id, book.genre.id if book.genre else None, book.publication_year))
+            book.id = self.cursor.fetchone()[0]
 
-            print(f"Book '{book.title}' by author '{book.author.name}' saved")
-            return book_id
+            self.connection.commit()
+            print(f"Book '{book.title}' by author '{book.author.name}' saved with ID: {book.id}")
+
+            return book.id
         except Exception as e:
             self.connection.rollback()
             print(f"Error while saving book: {e}")
 
     def get_all_available(self) -> Optional[List[Book]]:
         try:
-            self.cursor.execute("""
-                SELECT b.id, b.title, b.publication_year, a.name AS author_name, a.birth_date AS author_birth_date, g.name AS genre_name
-                FROM books b
-                JOIN authors a ON b.author_id = a.id
-                LEFT OUTER JOIN genres g ON b.genre_id = g.id
-                WHERE b.loan_id IS NULL;
-            """)
-            data = self.cursor.fetchall()
+            self.cursor.callproc('get_all_available_books')
+            rows = self.cursor.fetchall()
 
             books_list = []
-            for row in data:
+            for row in rows:
                 author = Author(name=row[3], birth_date=row[4])
                 genre = Genre(name=row[5]) if row[5] else None
                 books_list.append(Book(id=row[0], title=row[1], publication_year=row[2], author=author, genre=genre))
@@ -48,16 +39,11 @@ class BookRepository:
 
     def get_all(self) -> Optional[List[Book]]:
         try:
-            self.cursor.execute("""
-                SELECT b.id, b.title, b.publication_year, a.name AS author_name, a.birth_date AS author_birth_date, g.name
-                FROM books b
-                JOIN authors a ON b.author_id = a.id
-                LEFT OUTER JOIN genres g ON b.genre_id = g.id;
-            """)
-            data = self.cursor.fetchall()
+            self.cursor.callproc('get_all_books')
+            rows = self.cursor.fetchall()
 
             books_list = []
-            for row in data:
+            for row in rows:
                 author = Author(name=row[3], birth_date=row[4])
                 genre = Genre(name=row[5]) if row[5] else None
                 books_list.append(Book(id=row[0], title=row[1], publication_year=row[2], author=author, genre=genre))
@@ -68,16 +54,7 @@ class BookRepository:
 
     def update(self, book: Book):
         try:
-            update_query = """
-                UPDATE books
-                SET
-                    title = %s,
-                    author_id = %s,
-                    genre_id = %s,
-                    publication_year = %s
-                WHERE id = %s;
-            """
-            self.cursor.execute(update_query, (book.title, book.author.id, book.genre.id if book.genre else None, book.publication_year, book.id))
+            self.cursor.callproc('update_book', (book.id, book.title, book.author.id, book.genre.id if book.genre else None, book.publication_year))
             self.connection.commit()
 
             print(f"Book with ID {book.id} successfully updated")
@@ -87,11 +64,7 @@ class BookRepository:
 
     def return_by_id(self, book_id: int):
         try:
-            update_query = """
-                UPDATE books SET loan_id = NULL WHERE id = %s
-            """
-
-            self.cursor.execute(update_query, (book_id,))
+            self.cursor.callproc('return_book_by_id', (book_id,))
             self.connection.commit()
 
             print(f"Book with ID {book_id} returned back to library")
@@ -101,15 +74,7 @@ class BookRepository:
 
     def get_all_by_reader_id(self, reader_id: int) -> Optional[List[Book]]:
         try:
-            query = """
-                    SELECT b.id, b.title, a.name, a.birth_date, g.name, l.id, l.return_date, l.loan_date
-                    FROM books b
-                    JOIN authors a ON b.author_id = a.id
-                    LEFT OUTER JOIN genres g ON b.genre_id = g.id
-                    JOIN loans l ON b.loan_id = l.id
-                    WHERE l.reader_id = %s
-            """
-            self.cursor.execute(query, (reader_id,))
+            self.cursor.callproc('get_books_by_reader_id', (reader_id,))
             data = self.cursor.fetchall()
 
             book_list = []
@@ -127,8 +92,7 @@ class BookRepository:
 
     def delete_by_id(self, book_id: int):
         try:
-            delete_query = "DELETE FROM books WHERE id = %s;"
-            self.cursor.execute(delete_query, (book_id,))
+            self.cursor.callproc('delete_book_by_id', (book_id,))
             self.connection.commit()
             print(f"Book with ID {book_id} successfully deleted")
             return True

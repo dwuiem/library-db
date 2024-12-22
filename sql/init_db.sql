@@ -54,13 +54,13 @@ EXECUTE FUNCTION delete_unused_loans();
 
 
 -- Author table
-CREATE OR REPLACE FUNCTION save_author(name TEXT, birth_date DATE)
+CREATE OR REPLACE FUNCTION save_author(author_name TEXT, author_birth_date DATE)
 RETURNS INT AS $$
 DECLARE
     new_id INT;
 BEGIN
     INSERT INTO authors (name, birth_date)
-    VALUES (name, birth_date)
+    VALUES (author_name, author_birth_date)
     RETURNING id INTO new_id;
 
     RETURN new_id;
@@ -71,9 +71,9 @@ CREATE OR REPLACE FUNCTION get_author_by_name(author_name TEXT)
 RETURNS TABLE(id INT, name TEXT, birth_date DATE) AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name, birth_date
+    SELECT authors.id, authors.name, authors.birth_date
     FROM authors
-    WHERE name = author_name;
+    WHERE authors.name = author_name;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -81,36 +81,36 @@ CREATE OR REPLACE FUNCTION get_all_authors()
 RETURNS TABLE(id INT, name TEXT, birth_date DATE) AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name, birth_date
+    SELECT authors.id, authors.name, authors.birth_date
     FROM authors;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION update_author(id INT, name TEXT, birth_date DATE)
+CREATE OR REPLACE FUNCTION update_author(author_id INT, author_name TEXT, author_birth_date DATE)
 RETURNS VOID AS $$
 BEGIN
     UPDATE authors
-    SET name = name, birth_date = birth_date
-    WHERE id = id;
+    SET name = author_name, birth_date = author_birth_date
+    WHERE authors.id = author_id;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION delete_author_by_id(author_id INT)
 RETURNS VOID AS $$
 BEGIN
-    DELETE FROM authors WHERE id = author_id;
+    DELETE FROM authors WHERE authors.id = author_id;
 END;
 $$ LANGUAGE plpgsql;
 
 -- Book functions
 
-CREATE OR REPLACE FUNCTION save_book(title TEXT, author_id INT, genre_id INT, publication_year INT)
+CREATE OR REPLACE FUNCTION save_book(book_title TEXT, book_author_id INT, book_genre_id INT, book_publication_year INT)
 RETURNS INT AS $$
 DECLARE
     new_id INT;
 BEGIN
     INSERT INTO books (title, author_id, genre_id, publication_year)
-    VALUES (title, author_id, genre_id, publication_year)
+    VALUES (book_title, book_author_id, book_genre_id, book_publication_year)
     RETURNING id INTO new_id;
 
     RETURN new_id;
@@ -140,44 +140,83 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION update_book(id INT, title TEXT, author_id INT, genre_id INT, publication_year INT)
+CREATE OR REPLACE FUNCTION update_book(book_id INT, book_title TEXT, book_author_id INT, book_genre_id INT, book_publication_year INT)
 RETURNS VOID AS $$
 BEGIN
     UPDATE books
-    SET title = title, author_id = author_id, genre_id = genre_id, publication_year = publication_year
-    WHERE id = id;
+    SET title = book_title, author_id = book_author_id, genre_id = book_genre_id, publication_year = book_publication_year
+    WHERE books.id = book_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION return_book_by_id(book_id INT)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE books
+    SET loan_id = NULL
+    WHERE books.id = book_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_books_by_reader_id(target_reader_id INT)
+RETURNS TABLE (
+    book_id INT,
+    book_title TEXT,
+    author_name TEXT,
+    author_birth_date DATE,
+    genre_name TEXT,
+    loan_id INT,
+    loan_return_date TIMESTAMP,
+    loan_date TIMESTAMP
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        b.id,
+        b.title,
+        a.name,
+        a.birth_date,
+        g.name,
+        l.id,
+        l.return_date,
+        l.loan_date
+    FROM books b
+    JOIN authors a ON b.author_id = a.id
+    LEFT OUTER JOIN genres g ON b.genre_id = g.id
+    JOIN loans l ON b.loan_id = l.id
+    WHERE l.reader_id = target_reader_id;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION delete_book_by_id(book_id INT)
 RETURNS VOID AS $$
 BEGIN
-    DELETE FROM books WHERE id = book_id;
+    DELETE FROM books WHERE books.id = book_id;
 END;
 $$ LANGUAGE plpgsql;
 
 -- Genre functions
 
-CREATE OR REPLACE FUNCTION save_genre(name TEXT)
+CREATE OR REPLACE FUNCTION save_genre(genre_name TEXT)
 RETURNS INT AS $$
 DECLARE
     new_id INT;
 BEGIN
     INSERT INTO genres (name)
-    VALUES (name)
+    VALUES (genre_name)
     RETURNING id INTO new_id;
 
     RETURN new_id;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION get_genre_by_name(name TEXT)
+CREATE OR REPLACE FUNCTION get_genre_by_name(genre_name TEXT)
 RETURNS TABLE(id INT, name TEXT) AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name
+    SELECT genres.id, genres.name
     FROM genres
-    WHERE name = name;
+    WHERE genres.name = genre_name;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -185,57 +224,57 @@ CREATE OR REPLACE FUNCTION get_all_genres()
 RETURNS TABLE(id INT, name TEXT) AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name
+    SELECT genres.id, genres.name
     FROM genres;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION update_genre(id INT, name TEXT)
+CREATE OR REPLACE FUNCTION update_genre(genre_id INT, genre_name TEXT)
 RETURNS VOID AS $$
 BEGIN
     UPDATE genres
-    SET name = name
-    WHERE id = id;
+    SET name = genre_name
+    WHERE genres.id = genre_id;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION delete_genre_by_id(genre_id INT)
 RETURNS VOID AS $$
 BEGIN
-    DELETE FROM genres WHERE id = genre_id;
+    DELETE FROM genres WHERE genres.id = genre_id;
 END;
 $$ LANGUAGE plpgsql;
 
 -- Reader functions
 
-CREATE OR REPLACE FUNCTION save_reader(name TEXT)
+CREATE OR REPLACE FUNCTION save_reader(reader_name TEXT, reader_email TEXT, reader_phone TEXT)
 RETURNS INT AS $$
 DECLARE
     new_id INT;
 BEGIN
-    INSERT INTO readers (name)
-    VALUES (name)
+    INSERT INTO readers (name, email, phone)
+    VALUES (reader_name, reader_email, reader_phone)
     RETURNING id INTO new_id;
 
     RETURN new_id;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION get_reader_by_name(name TEXT)
-RETURNS TABLE(id INT, name TEXT) AS $$
+CREATE OR REPLACE FUNCTION get_reader_by_name(reader_name TEXT)
+RETURNS TABLE(id INT, name TEXT, email TEXT, phone TEXT) AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name
+    SELECT readers.id, readers.name, readers.email, readers.phone
     FROM readers
-    WHERE name = name;
+    WHERE readers.name = reader_name;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION get_all_readers()
-RETURNS TABLE(id INT, name TEXT) AS $$
+RETURNS TABLE(id INT, name TEXT, email TEXT, phone TEXT) AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name
+    SELECT readers.id, readers.name, readers.email, readers.phone
     FROM readers;
 END;
 $$ LANGUAGE plpgsql;
@@ -266,7 +305,7 @@ RETURNS TABLE (
     reader_name TEXT,
     reader_email TEXT,
     reader_phone TEXT,
-    return_date DATE,
+    return_date TIMESTAMP,
     loan_date TIMESTAMP
 ) AS $$
 BEGIN
@@ -278,19 +317,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION lend_books(reader_id INT, book_ids INT[], return_date DATE)
+CREATE OR REPLACE FUNCTION lend_books(loan_reader_id INT, book_ids INT[], loan_return_date TIMESTAMP)
 RETURNS INT AS $$
 DECLARE
-    loan_id INT;
+    new_loan_id INT;
 BEGIN
     INSERT INTO loans (reader_id, return_date)
-    VALUES (reader_id, return_date)
-    RETURNING id INTO loan_id;
+    VALUES (loan_reader_id, loan_return_date)
+    RETURNING id INTO new_loan_id;
 
     UPDATE books
-    SET loan_id = loan_id
-    WHERE id = ANY(book_ids);
+    SET loan_id = new_loan_id
+    WHERE books.id = ANY(book_ids);
 
-    RETURN loan_id;
+    RETURN new_loan_id;
 END;
 $$ LANGUAGE plpgsql;

@@ -11,11 +11,7 @@ class GenreRepository:
 
     def save(self, genre: Genre) -> int:
         try:
-            insert_query = """
-                INSERT INTO genres (name) 
-                VALUES (%s) RETURNING id;
-            """
-            self.cursor.execute(insert_query, (genre.name,))
+            self.cursor.callproc('save_genre', (genre.name,))
             genre.id = self.cursor.fetchone()[0]
             self.connection.commit()
 
@@ -29,7 +25,7 @@ class GenreRepository:
 
     def get_by_name(self, name: str) -> Optional[Genre]:
         try:
-            self.cursor.execute("SELECT id, name FROM genres WHERE name = %s;", (name,))
+            self.cursor.callproc('get_genre_by_name', (name,))
             genre = self.cursor.fetchone()
 
             if genre:
@@ -43,7 +39,7 @@ class GenreRepository:
 
     def get_all(self) -> Optional[List[Genre]]:
         try:
-            self.cursor.execute("SELECT id, name FROM genres;")
+            self.cursor.callproc('get_all_genres')
             genres = self.cursor.fetchall()
 
             if not genres:
@@ -56,32 +52,22 @@ class GenreRepository:
 
     def update(self, genre: Genre):
         try:
-            update_query = """
-                UPDATE genres
-                SET
-                    name = %s
-                WHERE id = %s;
-            """
-            self.cursor.execute(update_query, (genre.name, genre.id))
+            self.cursor.callproc('update_genre', (genre.id, genre.name))
             self.connection.commit()
 
             print(f"Genre with ID {genre.id} successfully updated")
-            return True
         except psycopg2.IntegrityError:
             raise ValueError
         except Exception as e:
             self.connection.rollback()
             print(f"Error while updating genre with ID {genre.id}: {e}")
-            return False
 
     def delete_by_id(self, genre_id: int):
         try:
-            delete_query = "DELETE FROM genres WHERE id = %s;"
-            self.cursor.execute(delete_query, (genre_id,))
+            self.cursor.callproc('delete_genre_by_id', (genre_id,))
             self.connection.commit()
+
             print(f"Genre with ID {genre_id} successfully deleted")
-            return True
         except Exception as e:
             self.connection.rollback()
             print(f"Error while deleting genre with ID {genre_id}: {e}")
-            return False
