@@ -1,3 +1,5 @@
+-- Создание таблиц
+
 CREATE TABLE IF NOT EXISTS authors (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
@@ -85,6 +87,32 @@ CREATE OR REPLACE TRIGGER trigger_update_books_on_loan_delete
 AFTER DELETE ON loans
 FOR EACH ROW
 EXECUTE FUNCTION update_books_on_loan_delete();
+
+-- Создание функции триггера
+
+CREATE OR REPLACE FUNCTION update_book_count()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Обновление поля book_count при добавлении книги в займ
+    IF (TG_OP = 'INSERT') THEN
+        UPDATE loans
+        SET book_count = (SELECT COUNT(*) FROM books WHERE loan_id = NEW.loan_id)
+        WHERE id = NEW.loan_id;
+    -- Обновление поля book_count при удалении книги из займа
+    ELSIF (TG_OP = 'DELETE') THEN
+        UPDATE loans
+        SET book_count = (SELECT COUNT(*) FROM books WHERE loan_id = OLD.loan_id)
+        WHERE id = OLD.loan_id;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Создание триггера для таблицы books
+CREATE TRIGGER book_count_trigger
+AFTER INSERT OR DELETE ON books
+FOR EACH ROW
+EXECUTE FUNCTION update_book_count();
 
 -- Удалять займы в которых не осталось книг, которые не вернули
 

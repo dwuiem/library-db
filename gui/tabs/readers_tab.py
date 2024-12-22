@@ -3,8 +3,8 @@ from tkinter import ttk, messagebox
 
 from entity import Reader
 from database import Database
-from windows.add_reader import AddReaderWindow
-from windows.edit_reader import EditReaderWindow
+from gui.windows.add_reader import AddReaderWindow
+from gui.windows.edit_reader import EditReaderWindow
 
 
 class ReadersTab:

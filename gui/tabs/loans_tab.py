@@ -5,7 +5,7 @@ from database import Database
 from tkinter import messagebox
 
 from utils import DATE_FORMAT
-from windows.lend_book import LendBookWindow
+from gui.windows.lend_book import LendBookWindow
 
 
 class LoansTab:

@@ -1,10 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
 
-from loans_tab import LoansTab
+from gui.tabs.loans_tab import LoansTab
 from database import Database
-from library_tab import LibraryTab
-from readers_tab import ReadersTab
+from gui.tabs.library_tab import LibraryTab
+from gui.tabs.readers_tab import ReadersTab
 
 
 class LibraryApp(tk.Tk):

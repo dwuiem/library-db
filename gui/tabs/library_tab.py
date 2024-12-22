@@ -5,13 +5,13 @@ from tkinter import messagebox
 from database import Database
 from entity import Book, Author, Genre
 from utils import DATE_FORMAT
-from windows.add_author import AddAuthorWindow
-from windows.add_book import AddBookWindow
-from windows.edit_author import EditAuthorWindow
-from windows.edit_book import EditBookWindow
+from gui.windows.add_author import AddAuthorWindow
+from gui.windows.add_book import AddBookWindow
+from gui.windows.edit_author import EditAuthorWindow
+from gui.windows.edit_book import EditBookWindow
 from datetime import datetime
 
-from windows.edit_genre import EditGenreWindow
+from gui.windows.edit_genre import EditGenreWindow
 
 
 class LibraryTab:
