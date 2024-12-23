@@ -8,7 +8,7 @@ from repository.loan_repository import LoanRepository
 from repository.reader_repository import ReaderRepository
 
 class Database:
-    def __init__(self, db_name: str, user: str, password: str, host: str = "localhost", port: str = "5432"):
+    def __init__(self, db_name: str, user: str, password: str, host: str, port: str):
         try:
             connection = psycopg2.connect(
                 dbname="postgres",
@@ -19,11 +19,23 @@ class Database:
             )
             connection.autocommit = True
             cursor = connection.cursor()
-            cursor.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(db_name)))
+            cursor.execute(
+                sql.SQL("SELECT 1 FROM pg_database WHERE datname = %s"),
+                [db_name]
+            )
+            if cursor.fetchone() is None:
+                # Если базы данных нет, создаем её
+                cursor.execute(
+                    sql.SQL("CREATE DATABASE {} OWNER {}").format(
+                        sql.Identifier(db_name),
+                        sql.Identifier(user)
+                    )
+                )
+                print(f"Database '{db_name}' created successfully.")
+            else:
+                print(f"Database '{db_name}' already exists.")
             cursor.close()
             connection.close()
-
-            print(f"Database {db_name} created")
         except psycopg2.errors.DuplicateDatabase as e:
             print(f"Database {db_name} already exists")
         except Exception as e:

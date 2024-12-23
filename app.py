@@ -6,6 +6,9 @@ from database import Database
 from gui.tabs.library_tab import LibraryTab
 from gui.tabs.readers_tab import ReadersTab
 
+import dotenv as env
+import os
+
 
 class LibraryApp(tk.Tk):
     def __init__(self):
@@ -14,8 +17,18 @@ class LibraryApp(tk.Tk):
         self.geometry("1000x800")
         self.resizable(True, True)
 
-        # TODO: user & password
-        self.db = Database(db_name="library_db", user="postgres", password="123")
+        env.load_dotenv()
+
+        db_name = os.getenv('DB_NAME')
+
+        db_host = os.getenv('DB_HOST')
+        db_port = os.getenv('DB_PORT')
+
+        db_user = os.getenv('DB_USER_LOGIN')
+        db_password = os.getenv('DB_USER_PASSWORD')
+
+
+        self.db = Database(db_name, user=db_user, password=db_password, host=db_host, port=db_port)
 
         self.notebook = ttk.Notebook()
         self.notebook.pack(fill=tk.BOTH, expand=True)

@@ -5,10 +5,28 @@ CREATE TABLE IF NOT EXISTS authors (
     name TEXT NOT NULL UNIQUE,
     birth_date DATE
 );
+
 CREATE TABLE IF NOT EXISTS genres (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE
 );
+
+CREATE TABLE IF NOT EXISTS readers (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE,
+    phone TEXT UNIQUE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS loans (
+    id SERIAL PRIMARY KEY,
+    reader_id INT NOT NULL,
+    loan_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    return_date TIMESTAMP NOT NULL,
+    book_count INT,
+    FOREIGN KEY (reader_id) REFERENCES readers(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS books (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
@@ -19,20 +37,6 @@ CREATE TABLE IF NOT EXISTS books (
     FOREIGN KEY (loan_id) REFERENCES loans (id) ON DELETE SET NULL,
     FOREIGN KEY (author_id) REFERENCES authors (id) ON DELETE CASCADE,
     FOREIGN KEY (genre_id) REFERENCES genres (id) ON DELETE CASCADE
-);
-CREATE TABLE IF NOT EXISTS readers (
-    id SERIAL PRIMARY KEY,
-    name TEXT UNIQUE NOT NULL,
-    email TEXT UNIQUE,
-    phone TEXT UNIQUE NOT NULL
-);
-CREATE TABLE IF NOT EXISTS loans (
-    id SERIAL PRIMARY KEY,
-    reader_id INT NOT NULL,
-    loan_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    return_date TIMESTAMP NOT NULL,
-    book_count INT,
-    FOREIGN KEY (reader_id) REFERENCES readers(id) ON DELETE CASCADE
 );
 
 -- Очистка всех таблиц
@@ -393,7 +397,7 @@ $$ LANGUAGE plpgsql;
 -- --------------
 -- Loan functions
 -- --------------
-DROP FUNCTION get_all_loans();
+
 CREATE OR REPLACE FUNCTION get_all_loans()
 RETURNS TABLE (
     loan_id INT,
