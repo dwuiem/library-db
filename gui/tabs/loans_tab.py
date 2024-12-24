@@ -33,6 +33,9 @@ class LoansTab:
         self.search_button = tk.Button(self.top_frame, text="Отобразить", command=self.display_reader_info)
         self.search_button.pack(side=tk.LEFT, padx=5)
 
+        self.delete_button = tk.Button(self.top_frame, text="Удалить читателя по имени", command=self.remove_reader)
+        self.delete_button.pack(side=tk.LEFT, padx=5)
+
         self.reader_info_label = ttk.Label(self.frame, text="Читатель не выбран")
         self.reader_info_label.pack(padx=10, pady=5, anchor="w")
 
@@ -148,6 +151,14 @@ class LoansTab:
                 book_id = int(values[0])
                 book_ids.append(book_id)
             LendBookWindow(self.parent, self.db, self.reader.id, book_ids)
+
+    def remove_reader(self):
+        reader_name = self.reader_entry.get()
+        if not reader_name:
+            messagebox.showerror("Ошибка", "Читатель не выбран")
+            return
+        self.db.reader_repository.delete_by_name(reader_name)
+
 
     def return_book(self):
         selected_items = self.reserved_books_treeview.selection()

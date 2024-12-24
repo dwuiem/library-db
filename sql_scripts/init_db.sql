@@ -394,6 +394,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION delete_reader_by_name(reader_name TEXT)
+RETURNS VOID AS $$
+BEGIN
+    DELETE FROM readers WHERE name = reader_name;
+END;
+$$ LANGUAGE plpgsql;
+
 -- --------------
 -- Loan functions
 -- --------------

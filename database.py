@@ -9,6 +9,12 @@ from repository.reader_repository import ReaderRepository
 
 class Database:
     def __init__(self, db_name: str, user: str, password: str, host: str, port: str):
+        self.db_name = db_name
+        self.user = user
+        self.password = password
+        self.host = host
+        self.port = port
+
         try:
             connection = psycopg2.connect(
                 dbname="postgres",
@@ -21,26 +27,24 @@ class Database:
             cursor = connection.cursor()
             cursor.execute(
                 sql.SQL("SELECT 1 FROM pg_database WHERE datname = %s"),
-                [db_name]
+                [self.db_name]
             )
+
             if cursor.fetchone() is None:
                 # Если базы данных нет, создаем её
                 cursor.execute(
                     sql.SQL("CREATE DATABASE {} OWNER {}").format(
-                        sql.Identifier(db_name),
-                        sql.Identifier(user)
+                        sql.Identifier(self.db_name),
+                        sql.Identifier(self.user)
                     )
                 )
-                print(f"Database '{db_name}' created successfully.")
+                print(f"Database '{self.db_name}' created successfully.")
             else:
-                print(f"Database '{db_name}' already exists.")
+                print(f"Database '{self.db_name}' already exists.")
             cursor.close()
             connection.close()
-        except psycopg2.errors.DuplicateDatabase as e:
-            print(f"Database {db_name} already exists")
         except Exception as e:
             print(f"Error creating db: {e}")
-
         try:
             self.connection = psycopg2.connect(
                 dbname=db_name,

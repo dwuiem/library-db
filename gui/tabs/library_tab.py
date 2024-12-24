@@ -67,8 +67,8 @@ class LibraryTab:
         self.remove_book_button_right = tk.Button(self.books_buttons, text="Удалить книги", command=self.remove_book)
         self.remove_book_button_right.pack(side=tk.LEFT, padx=5)
 
-        self.clear_books_button = tk.Button(self.books_buttons, text="Очистить все книги", command=self.db.book_repository.clear_all)
-        self.clear_books_button.pack(side=tk.LEFT, padx=5)
+        self.remove_book_button_right = tk.Button(self.books_buttons, text="Удалить ВСЕ книги", command=self.db.book_repository.clear_all)
+        self.remove_book_button_right.pack(side=tk.RIGHT, padx=5)
 
         self.authors_and_genres_frame = ttk.Frame(self.right_panel)
         self.authors_and_genres_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)

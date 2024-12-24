@@ -36,7 +36,7 @@ class LendBookWindow:
             messagebox.showerror("Ошибка", f"Неверный формат даты. Используйте формат DD.MM.YYYY.")
             return
         current_date = datetime.now()
-        max_return_date = current_date + timedelta(days=7)
+        max_return_date = current_date + timedelta(days=14)
         if return_date > max_return_date or return_date <= current_date:
             messagebox.showerror("Ошибка", "Дата возврата не может быть текущей и ранее или позже, чем через 7 дней от текущей.")
             return

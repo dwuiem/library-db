@@ -54,7 +54,6 @@ class ReaderRepository:
 
     def update(self, reader: Reader):
         try:
-
             self.cursor.callproc('update_reader', (reader.id, reader.name, reader.email, reader.phone))
             self.connection.commit()
 
@@ -74,3 +73,13 @@ class ReaderRepository:
         except Exception as e:
             self.connection.rollback()
             print(f"Error while updating reader with ID {reader_id}: {e}")
+
+    def delete_by_name(self, reader_name: str):
+        try:
+            self.cursor.callproc('delete_reader_by_name', (reader_name,))
+            self.connection.commit()
+
+            print(f"Reader with Name {reader_name} was removed")
+        except Exception as e:
+            self.connection.rollback()
+            print(f"Error while updating reader with Name {reader_name}: {e}")
